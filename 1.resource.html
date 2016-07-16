@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="appModule">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body ng-controller="ctrl">
+<input type="text" ng-model="query" ng-model-options="{updateOn:'blur'}">
+<table>
+    <tr>
+        <td>书的名字</td>
+        <td>书的价格</td>
+        <td>书的数量</td>
+        <td>修改</td>
+    </tr>
+    <tr ng-repeat="book in books">
+        <td>{{book.name}}</td>
+        <td>{{book.price}}</td>
+        <td><input type="text" ng-model="book.count"></td>
+        <td><button ng-click="update(book)">修改</button></td>
+    </tr>
+</table>
+<input type="text" ng-model="name">
+<input type="text" ng-model="price">
+<input type="text" ng-model="count">
+<button ng-click="save()"></button>
+{{book.name}}{{book.price}}
+<script src="node_modules/angular/angular.js"></script>
+<script src="node_modules/angular-resource/angular-resource.js"></script>
+<script>
+    var app = angular.module('appModule',['ngResource']);
+    app.factory('book', function ($resource) {
+        return $resource('/book/:id',{
+            id:'@id'
+        },{
+            update:{
+                method:'PUT'
+            }
+        });
+    })
+    app.controller('ctrl', function ($scope,book) {
+        $scope.books = book.query();
+      /*  $scope.$watch('query', function (newVal) {
+            $scope.book = book.query({id:newVal});
+        });*/
+        $scope.save = function (){
+            book.save({name:$scope.name,price:$scope.price,count:$scope.count}).$promise.catch(function () {
+                $scope.books = book.query();
+            });
+        }
+        $scope.update = function (b) {
+            book.update(b);
+            $scope.books = book.query();
+        }
+    })
+</script>
+</body>
+</html>
